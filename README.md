@@ -25,7 +25,6 @@ erDiagram
     PROPIETARIO ||--o{ PROPIEDAD : "es dueño de"
     AGENTE ||--o{ PROPIEDAD : gestiona
     PROPIEDAD }o--o{ CARACTERISTICA : tiene
-    USER ||--|| AGENTE : "es"
     PROPIEDAD ||--o{ VISITA : recibe
     CLIENTE ||--o{ VISITA : pide
     AGENTE ||--o{ VISITA : atiende
@@ -61,7 +60,8 @@ erDiagram
     }
     AGENTE {
         int id PK
-        int user_id FK
+        string nombre
+        string apellido
         string telefono
         string matricula
     }
@@ -71,7 +71,7 @@ erDiagram
         string apellido
         string dni "opcional"
         string telefono
-        string email "unico"
+        string email
     }
     PROPIEDAD {
         int id PK
@@ -79,16 +79,16 @@ erDiagram
         text descripcion
         string direccion
         string operacion "venta / alquiler"
-        decimal precio "opcional = Consultar"
+        int precio "opcional = Consultar"
         string moneda "ARS / USD"
-        decimal superficie_m2
+        int superficie_m2
         int ambientes
         int dormitorios
         int banios
         int cocheras
         string estado "disponible / reservada / alquilada / vendida"
         image foto "opcional"
-        date fecha_publicacion
+        datetime fecha_publicacion
         int barrio_id FK
         int tipo_id FK
         int propietario_id FK
@@ -106,9 +106,9 @@ erDiagram
     CONTRATO {
         int id PK
         string tipo "venta / alquiler"
-        date fecha_inicio
-        date fecha_fin "opcional"
-        decimal monto
+        datetime fecha_inicio
+        datetime fecha_fin "opcional"
+        int monto
         bool activo
         int propiedad_id FK
         int cliente_id FK
@@ -124,14 +124,13 @@ erDiagram
 | `propiedades` | Caracteristica | M2M con Propiedad |
 | `propiedades` | Propiedad | FK → Barrio, TipoPropiedad, Propietario, Agente · M2M → Caracteristica |
 | `personas` | Propietario | — |
-| `personas` | Agente | OneToOne → User |
+| `personas` | Agente | — |
 | `personas` | Cliente | — |
 | `operaciones` | Visita | FK → Propiedad, Cliente, Agente |
 | `operaciones` | Contrato | FK → Propiedad, Cliente, Agente |
 
 Algunas decisiones:
 - **Caracteristica** es una tabla aparte (pileta, parrilla, patio...) y no campos booleanos en Propiedad, así se pueden agregar nuevas desde el admin sin tocar el código.
-- **Agente** está atado a un **User** de Django, para que los agentes puedan loguearse.
 - **Cliente** se identifica por email: cuando alguien pide una visita desde la web y ya existe, se reutiliza.
 - Si una propiedad no tiene **precio**, en el front se muestra "Consultar".
 
