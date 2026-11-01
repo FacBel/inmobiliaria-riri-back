@@ -1,5 +1,7 @@
-from rest_framework import viewsets
+from rest_framework import status, viewsets
+from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 
 from .models import Contrato, Visita
 from .serializers import ContratoPublicSerializer, ContratoSerializer, VisitaSerializer
@@ -9,6 +11,19 @@ class VisitaViewSet(viewsets.ModelViewSet):
     queryset = Visita.objects.all().select_related("propiedad", "cliente", "agente").order_by("id")
     serializer_class = VisitaSerializer
     permission_classes = [IsAuthenticated]
+
+    # Endpoint: /api/visitas/<id>/confirmar/
+    @action(detail=True, methods=["post"])
+    def confirmar(self, request, pk=None):
+        visita = self.get_object()
+        if visita.estado != "pendiente":
+            return Response(
+                {"mensaje": "Solo se puede confirmar una visita pendiente"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        visita.estado = "confirmada"
+        visita.save()
+        return Response({"mensaje": "Visita confirmada"})
 
 
 class ContratoViewSet(viewsets.ModelViewSet):

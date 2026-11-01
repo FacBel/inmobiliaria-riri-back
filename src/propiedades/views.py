@@ -1,5 +1,13 @@
-from rest_framework import viewsets
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import status, viewsets
+from rest_framework.decorators import action
+from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.permissions import AllowAny, IsAuthenticatedOrReadOnly
+from rest_framework.response import Response
+
+from operaciones.serializers import VisitaSerializer
+from personas.models import Cliente
+from personas.serializers import ClienteSerializer
 
 from .models import Caracteristica, Propiedad, TipoPropiedad
 from .serializers import (
@@ -26,9 +34,62 @@ class PropiedadViewSet(viewsets.ModelViewSet):
     queryset = Propiedad.objects.all().select_related("barrio__ciudad", "tipo", "agente").order_by("id")
     # listado y ficha publicos, la carga la hace el personal logueado
     permission_classes = [IsAuthenticatedOrReadOnly]
+    # los mismos filtros que el buscador de Verdolini
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filterset_fields = {
+        "operacion": ["exact"],
+        "tipo": ["exact"],
+        "barrio": ["exact"],
+        "barrio__ciudad": ["exact"],
+        "dormitorios": ["exact"],
+        "ambientes": ["exact"],
+        "estado": ["exact"],
+        "precio": ["gte", "lte"],
+    }
+    search_fields = ["titulo", "direccion", "descripcion"]
+    ordering_fields = ["precio", "fecha_publicacion"]
 
     def get_serializer_class(self):
         # anidado solo en el list, en el resto las FK van como id
         if self.action == "list":
             return PropiedadPublicSerializer
         return PropiedadSerializer
+
+    # Endpoint: /api/propiedades/disponibles/
+    @action(detail=False, methods=["get"])
+    def disponibles(self, request):
+        propiedades = self.get_queryset().filter(estado="disponible")
+        page = self.paginate_queryset(propiedades)
+        serializer = PropiedadPublicSerializer(page, many=True)
+        return self.get_paginated_response(serializer.data)
+
+    # Endpoint: /api/propiedades/<id>/solicitar_visita/
+    # cualquier visitante puede pedir una visita, sin estar logueado
+    @action(detail=True, methods=["post"], permission_classes=[AllowAny])
+    def solicitar_visita(self, request, pk=None):
+        propiedad = self.get_object()
+        if propiedad.estado != "disponible":
+            return Response(
+                {"mensaje": "La propiedad no esta disponible"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # si el cliente ya existe lo buscamos por el email, si no lo creamos
+        cliente = Cliente.objects.filter(email=request.data.get("email")).first()
+        if cliente is None:
+            cliente_serializer = ClienteSerializer(data=request.data)
+            if not cliente_serializer.is_valid():
+                return Response(cliente_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            cliente = cliente_serializer.save()
+
+        visita_serializer = VisitaSerializer(data={
+            "fecha_hora": request.data.get("fecha_hora"),
+            "comentarios": request.data.get("comentarios", ""),
+            "propiedad": propiedad.id,
+            "cliente": cliente.id,
+            "agente": propiedad.agente_id,
+        })
+        if not visita_serializer.is_valid():
+            return Response(visita_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        visita_serializer.save()
+        return Response(visita_serializer.data, status=status.HTTP_201_CREATED)
