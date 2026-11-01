@@ -1,3 +1,4 @@
+from drf_spectacular.utils import OpenApiResponse, extend_schema
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
@@ -13,6 +14,15 @@ class VisitaViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     # Endpoint: /api/visitas/<id>/confirmar/
+    @extend_schema(
+        summary="El personal confirma una visita",
+        description="Pasa la visita de pendiente a confirmada. Requiere estar logueado.",
+        request=None,
+        responses={
+            200: OpenApiResponse(description="Visita confirmada"),
+            400: OpenApiResponse(description="La visita no esta pendiente"),
+        },
+    )
     @action(detail=True, methods=["post"])
     def confirmar(self, request, pk=None):
         visita = self.get_object()

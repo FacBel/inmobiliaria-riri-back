@@ -1,4 +1,5 @@
 from django_filters.rest_framework import DjangoFilterBackend
+from drf_spectacular.utils import OpenApiResponse, extend_schema
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.filters import OrderingFilter, SearchFilter
@@ -56,6 +57,15 @@ class PropiedadViewSet(viewsets.ModelViewSet):
         return PropiedadSerializer
 
     # Endpoint: /api/propiedades/disponibles/
+    @extend_schema(
+        summary="Lista las propiedades disponibles",
+        description=(
+            "Devuelve solo las propiedades con estado disponible, paginadas de a 10. "
+            "Los filtros del buscador no se aplican aca: para filtrar usar "
+            "/api/propiedades/?estado=disponible."
+        ),
+        responses={200: PropiedadPublicSerializer(many=True)},
+    )
     @action(detail=False, methods=["get"])
     def disponibles(self, request):
         propiedades = self.get_queryset().filter(estado="disponible")
@@ -65,6 +75,19 @@ class PropiedadViewSet(viewsets.ModelViewSet):
 
     # Endpoint: /api/propiedades/<id>/solicitar_visita/
     # cualquier visitante puede pedir una visita, sin estar logueado
+    @extend_schema(
+        summary="Un visitante pide una visita a la propiedad",
+        description=(
+            "No hace falta estar logueado. Además de los datos del cliente se manda "
+            "fecha_hora y comentarios. Si el cliente no existe (por email) se crea, "
+            "y la visita queda pendiente con el agente de la propiedad."
+        ),
+        request=ClienteSerializer,
+        responses={
+            201: VisitaSerializer,
+            400: OpenApiResponse(description="La propiedad no esta disponible o faltan datos"),
+        },
+    )
     @action(detail=True, methods=["post"], permission_classes=[AllowAny])
     def solicitar_visita(self, request, pk=None):
         propiedad = self.get_object()
