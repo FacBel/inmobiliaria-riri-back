@@ -10,23 +10,29 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.1/ref/settings/
 """
 
+import os
 from datetime import timedelta
 from pathlib import Path
 
+from dotenv import load_dotenv
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# BASE_DIR esta adentro de src/, el .env esta en la raiz del repo
+load_dotenv(BASE_DIR / "../.env")
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.1/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-8$7%u6fn!p@=q#_t)5_08v6&*l+ttwy(@jg5&n826xf+=u)izn'
+# la clave real viene del .env, el valor por defecto es solo para local
+SECRET_KEY = os.getenv("SECRET_KEY", "dev-key-solo-para-local")
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# DEBUG solo es True si el .env lo dice
+DEBUG = os.getenv("DEBUG", "False") == "True"
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
 
 
 # Application definition
@@ -40,6 +46,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'django_filters',
+    'drf_spectacular',
+    'corsheaders',
     # apps del proyecto
     'ubicaciones',
     'personas',
@@ -48,6 +56,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -56,6 +65,11 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+# CORS: desde que dominios el front puede llamar a la API
+# lista separada por comas, sin barra final: http://localhost:5173,http://127.0.0.1:5173
+cors_origins = os.getenv("CORS_ORIGINS", "")
+CORS_ALLOWED_ORIGINS = [o.strip() for o in cors_origins.split(",") if o.strip()]
 
 ROOT_URLCONF = 'settings.urls'
 
@@ -145,8 +159,16 @@ REST_FRAMEWORK = {
         "rest_framework_simplejwt.authentication.JWTAuthentication",
         "rest_framework.authentication.SessionAuthentication",
     ],
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 10,
+}
+
+# datos generales de la documentacion
+SPECTACULAR_SETTINGS = {
+    "TITLE": "API Inmobiliaria Riri",
+    "DESCRIPTION": "Back de la EFI de Ingeniería de Software (ITEC)",
+    "VERSION": "1.0.0",
 }
 
 SIMPLE_JWT = {
