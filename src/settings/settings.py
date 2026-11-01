@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'django_filters',
+    'drf_spectacular',
     # apps del proyecto
     'ubicaciones',
     'personas',
@@ -145,8 +146,16 @@ REST_FRAMEWORK = {
         "rest_framework_simplejwt.authentication.JWTAuthentication",
         "rest_framework.authentication.SessionAuthentication",
     ],
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 10,
+}
+
+# datos generales de la documentacion
+SPECTACULAR_SETTINGS = {
+    "TITLE": "API Inmobiliaria Riri",
+    "DESCRIPTION": "Back de la EFI de Ingeniería de Software (ITEC)",
+    "VERSION": "1.0.0",
 }
 
 SIMPLE_JWT = {
