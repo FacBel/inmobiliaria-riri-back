@@ -6,6 +6,10 @@ from .serializers import AgenteSerializer, ClienteSerializer, PropietarioSeriali
 
 
 class PropietarioViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    Propietarios (requiere login, solo lectura). Para el desplegable al cargar
+    una propiedad. El alta se hace desde el admin.
+    """
     queryset = Propietario.objects.all().order_by("id")
     serializer_class = PropietarioSerializer
     # datos privados, solo para el personal
@@ -13,6 +17,10 @@ class PropietarioViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class AgenteViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    Agentes de la inmobiliaria (publico, solo lectura). Para el "Contactar
+    operador" de la ficha y el desplegable al cargar una propiedad.
+    """
     queryset = Agente.objects.all().order_by("id")
     serializer_class = AgenteSerializer
     # publico para el "Contactar operador" del front
@@ -20,6 +28,10 @@ class AgenteViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class ClienteViewSet(viewsets.ModelViewSet):
+    """
+    Clientes (requiere login). Gestion interna del personal. Los clientes
+    tambien se crean solos cuando un visitante pide una visita.
+    """
     queryset = Cliente.objects.all().order_by("id")
     serializer_class = ClienteSerializer
     permission_classes = [IsAuthenticated]

@@ -20,18 +20,35 @@ from .serializers import (
 
 
 class TipoPropiedadViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    Tipos de propiedad: casa, departamento, terreno... (publico, solo lectura).
+    Para el filtro "Tipo" del buscador.
+    """
     queryset = TipoPropiedad.objects.all().order_by("id")
     serializer_class = TipoPropiedadSerializer
     permission_classes = [AllowAny]
 
 
 class CaracteristicaViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    Caracteristicas de las propiedades: pileta, quincho, patio... (publico,
+    solo lectura). Para mostrarlas en la ficha y elegirlas al cargar una propiedad.
+    """
     queryset = Caracteristica.objects.all().order_by("id")
     serializer_class = CaracteristicaSerializer
     permission_classes = [AllowAny]
 
 
 class PropiedadViewSet(viewsets.ModelViewSet):
+    """
+    Propiedades de la inmobiliaria. El listado y la ficha son publicos;
+    crear, editar y borrar requiere login.
+    El listado trae barrio (con su ciudad), tipo, agente y caracteristicas
+    anidados; el detalle y la carga usan los ids.
+    Filtros: operacion, tipo, barrio, barrio__ciudad, dormitorios, ambientes,
+    estado, precio__gte y precio__lte. Busqueda (search) por titulo, direccion
+    y descripcion. Orden (ordering) por precio y fecha_publicacion.
+    """
     queryset = Propiedad.objects.all().select_related("barrio__ciudad", "tipo", "agente").order_by("id")
     # listado y ficha publicos, la carga la hace el personal logueado
     permission_classes = [IsAuthenticatedOrReadOnly]

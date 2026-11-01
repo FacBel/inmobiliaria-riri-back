@@ -9,6 +9,10 @@ from .serializers import ContratoPublicSerializer, ContratoSerializer, VisitaSer
 
 
 class VisitaViewSet(viewsets.ModelViewSet):
+    """
+    Visitas a propiedades (requiere login). Gestion interna: el visitante la
+    pide desde la propiedad (queda pendiente) y el personal la confirma.
+    """
     queryset = Visita.objects.all().select_related("propiedad", "cliente", "agente").order_by("id")
     serializer_class = VisitaSerializer
     permission_classes = [IsAuthenticated]
@@ -37,6 +41,11 @@ class VisitaViewSet(viewsets.ModelViewSet):
 
 
 class ContratoViewSet(viewsets.ModelViewSet):
+    """
+    Contratos de venta y alquiler (requiere login). Gestion interna.
+    El listado trae la propiedad y el cliente anidados; el detalle y la carga
+    usan los ids.
+    """
     queryset = Contrato.objects.all().select_related("propiedad", "cliente", "agente").order_by("id")
     permission_classes = [IsAuthenticated]
 
