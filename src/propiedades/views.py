@@ -1,5 +1,6 @@
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets
+from rest_framework.decorators import action
 from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.permissions import AllowAny, IsAuthenticatedOrReadOnly
 
@@ -48,3 +49,11 @@ class PropiedadViewSet(viewsets.ModelViewSet):
         if self.action == "list":
             return PropiedadPublicSerializer
         return PropiedadSerializer
+
+    # Endpoint: /api/propiedades/disponibles/
+    @action(detail=False, methods=["get"])
+    def disponibles(self, request):
+        propiedades = self.get_queryset().filter(estado="disponible")
+        page = self.paginate_queryset(propiedades)
+        serializer = PropiedadPublicSerializer(page, many=True)
+        return self.get_paginated_response(serializer.data)
