@@ -22,8 +22,11 @@ from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, Spec
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 from .routers import router
+from .views import inicio
 
 urlpatterns = [
+    # pagina de bienvenida
+    path('', inicio, name='inicio'),
     path('admin/', admin.site.urls),
     # login con JWT para el front
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain'),
