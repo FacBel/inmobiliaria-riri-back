@@ -170,6 +170,8 @@ SPECTACULAR_SETTINGS = {
     "TITLE": "API Inmobiliaria Riri",
     "DESCRIPTION": "Back de la EFI de Ingeniería de Software (ITEC)",
     "VERSION": "1.0.0",
+    # redoc 3 no anda con drf-spectacular, se fija la version 2
+    "REDOC_DIST": "https://cdn.jsdelivr.net/npm/redoc@2",
 }
 
 SIMPLE_JWT = {
