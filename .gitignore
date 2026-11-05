@@ -17,3 +17,6 @@ db.sqlite3
 
 # Archivos subidos (fotos de propiedades)
 media/
+
+# Estaticos que junta collectstatic
+staticfiles/
