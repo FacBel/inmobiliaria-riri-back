@@ -12,27 +12,29 @@ https://docs.djangoproject.com/en/6.1/ref/settings/
 
 import os
 from datetime import timedelta
+import os
+from datetime import timedelta
 from pathlib import Path
-
 from dotenv import load_dotenv
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# BASE_DIR esta adentro de src/, el .env esta en la raiz del repo
-load_dotenv(BASE_DIR / "../.env")
+# El .env está en la raíz del repositorio, fuera de src/
+load_dotenv(BASE_DIR.parent / ".env")
 
-
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/6.1/howto/deployment/checklist/
-
-# la clave real viene del .env, el valor por defecto es solo para local
+# Variables de entorno
 SECRET_KEY = os.getenv("SECRET_KEY", "dev-key-solo-para-local")
-
-# DEBUG solo es True si el .env lo dice
 DEBUG = os.getenv("DEBUG", "False") == "True"
 
 ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
+
+# CORS
+cors_origins = os.getenv("CORS_ORIGINS", "")
+CORS_ALLOWED_ORIGINS = [
+    origin.strip()
+    for origin in cors_origins.split(",")
+    if origin.strip()
+]
 
 
 # Application definition
@@ -65,11 +67,6 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
-
-# CORS: desde que dominios el front puede llamar a la API
-# lista separada por comas, sin barra final: http://localhost:5173,http://127.0.0.1:5173
-cors_origins = os.getenv("CORS_ORIGINS", "")
-CORS_ALLOWED_ORIGINS = [o.strip() for o in cors_origins.split(",") if o.strip()]
 
 ROOT_URLCONF = 'settings.urls'
 
