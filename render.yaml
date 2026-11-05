@@ -1,0 +1,28 @@
+databases:
+  - name: inmobiliaria-riri-db
+    plan: free
+
+services:
+  - type: web
+    name: inmobiliaria-riri-api
+    runtime: python
+    plan: free
+    buildCommand: bash build.sh
+    startCommand: cd src && gunicorn settings.wsgi:application
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.3
+      - key: DATABASE_URL
+        fromDatabase:
+          name: inmobiliaria-riri-db
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: CORS_ORIGINS
+        value: http://localhost:3000,http://127.0.0.1:3000
+      - key: DJANGO_SUPERUSER_USERNAME
+        value: admin
+      - key: DJANGO_SUPERUSER_EMAIL
+        value: admin@example.com
+      - key: DJANGO_SUPERUSER_PASSWORD
+        sync: false
